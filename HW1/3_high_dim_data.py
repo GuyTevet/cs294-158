@@ -97,8 +97,8 @@ def train(data, model, config):
                     writer.add_summary(summary, step)
 
                 step += 1
-            sample_path = os.path.join(experiment_path, 'epoch.png'.format(epoch))
-            sample_and_save(sess, model, data, sample_path, 'Epoch {}'.format(epoch))
+            sample_path = os.path.join(experiment_path, 'epoch_{}.png'.format(epoch + 1))
+            sample_and_save(sess, model, data, sample_path, 'Epoch {}'.format(epoch + 1))
 
         # save checkpoint
         logger.info('#' * 20)
