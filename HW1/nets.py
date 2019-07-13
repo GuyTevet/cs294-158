@@ -25,7 +25,7 @@ class pixelCNN(object):
     def create_feed_dict(self, inputs_batch):
         return {self.inputs_batch: inputs_batch}
 
-    def add_build_op(self):
+    def add_net(self):
 
         net = ops.conv_masked(self.input_float, 'conv7x7', 7, in_channels=self.num_channels, type_A=True)
 
@@ -91,10 +91,17 @@ class pixelCNN(object):
             _, loss = sess.run([self.train_op, self.loss], feed_dict=feed)
             return loss
 
-    def sample(self, sess):
-        feed = self.create_feed_dict(np.zeros([1, self.image_size, self.image_size, self.num_channels]))
-        pred = sess.run(self.pred, feed_dict=feed)
-        return np.argmax(pred, axis=5).squeeze().astype(np.uint8)
+    def add_grads(self):
+        # receptive field experiment
+        dy = self.logits[0,14,14,0] # mid output
+        dx = self.input_float # with respect to input
+        grad = tf.gradients(dy,dx) # calc grad
+        return grad
+
+    def calc_grad(self, sess):
+        feed = self.create_feed_dict(np.random.choice(4, size=(1, self.image_size, self.image_size, self.num_channels)).astype(np.uint8))
+        grad = sess.run(self.grad, feed_dict=feed)
+        return grad[0]
 
     def sample(self, sess, num_images=1):
         images = np.random.choice(4, size=(num_images, self.image_size, self.image_size, self.num_channels)).astype(np.uint8)
@@ -135,9 +142,10 @@ class pixelCNN(object):
         with self.graph.as_default():
             with tf.variable_scope(name):
                 self.add_placeholders()
-                self.logits = self.add_build_op()
+                self.logits = self.add_net()
                 self.loss = self.add_loss_op(self.logits)
                 self.pred = self.add_inference_op(self.logits)
+                self.grad = self.add_grads()
                 # self.accuracy = self.add_measurements(self.pred)
                 self.train_op = self.add_training_op(self.loss)
                 if summarize:

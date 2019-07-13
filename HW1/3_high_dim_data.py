@@ -46,6 +46,7 @@ def sample_and_save(sess, model, data, save_path, label=''):
     logger.info('Sampling {} images from the model'.format(num_images))
     samples = model.sample(sess, num_images)
     # samples = np.zeros([num_images, 28, 28, 3])
+    # samples = data['test'][:num_images]
 
     # save samples
     plt.figure(figsize=(12, 12))
@@ -57,6 +58,21 @@ def sample_and_save(sess, model, data, save_path, label=''):
             plt.axis('off')
             plt.grid(False)
     plt.savefig(save_path)
+
+def recptive_field_experiment(sess, model, save_path, label=''):
+
+
+    grad = model.calc_grad(sess)
+    grad = np.mean(grad, axis=3).squeeze() # average colors
+    grad = grad != 0 # make it binary
+
+    # save
+    plt.figure(figsize=(8, 8))
+    plt.suptitle(label, fontsize=28)
+    plt.imshow(grad)
+    plt.axis('off')
+    plt.savefig(save_path)
+
 
 def train(data, model, config):
 
@@ -77,6 +93,10 @@ def train(data, model, config):
         # init
         tf.global_variables_initializer().run()
         step = 0
+
+        # receptive field experiment
+        grad_path = os.path.join(experiment_path, 'receptive_field.png')
+        recptive_field_experiment(sess, model, grad_path, 'Receptive Field at [14, 14, 0]')
 
         sample_path = os.path.join(experiment_path, 'init.png')
         sample_and_save(sess, model, data, sample_path, 'On init')
