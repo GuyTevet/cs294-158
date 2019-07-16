@@ -39,10 +39,11 @@ class pixelCNN(object):
                        out_channels=self.net_width)
 
         if self.use_made:
+            auxilary_width = 16
             net = tf.nn.relu(net)
             net = ops.conv_1x1(net, 'final_conv1x1_2',
                            in_channels=self.net_width,
-                           out_channels=self.net_width)
+                           out_channels=auxilary_width)
 
             net = ops.made_with_auxiliary(input=self.inputs_batch,
                                           auxilary_input=net)
