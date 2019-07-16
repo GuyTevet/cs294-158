@@ -16,14 +16,14 @@ logger = logging.getLogger('log')
 logger.setLevel(logging.DEBUG)
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
-num_epochs = 25
+num_epochs = 50
 
 
 def get_data():
     pkl_name = './mnist-hw1.pkl'
 
     if not os.path.exists((pkl_name)):
-        raise FileNotFoundError(
+        raise IOError(
             'Please download the file mnist-hw1.pkl from https://drive.google.com/file/d/1hm077GxmIBP-foHxiPtTxSNy371yowk2/view and put it in this directory.')
 
     with open(pkl_name, 'rb') as fo:
@@ -44,9 +44,9 @@ def sample_and_save(sess, model, data, save_path, label=''):
     # sample
     num_images = 16
     logger.info('Sampling {} images from the model'.format(num_images))
-    samples = model.sample(sess, num_images)
+    # samples = model.sample(sess, num_images)
     # samples = np.zeros([num_images, 28, 28, 3])
-    # samples = data['test'][:num_images]
+    samples = data['test'][:num_images]
 
     # save samples
     plt.figure(figsize=(12, 12))
@@ -70,6 +70,9 @@ def recptive_field_experiment(sess, model, save_path, label=''):
     plt.figure(figsize=(8, 8))
     plt.suptitle(label, fontsize=28)
     plt.imshow(grad)
+    # plt.pcolormesh(grad, edgecolors='k', linewidth=2)
+    # ax = plt.gca()
+    # ax.set_aspect('equal')
     plt.axis('off')
     plt.savefig(save_path)
 
@@ -117,8 +120,9 @@ def train(data, model, config):
                     writer.add_summary(summary, step)
 
                 step += 1
-            sample_path = os.path.join(experiment_path, 'epoch_{0:02d}.png'.format(epoch + 1))
-            sample_and_save(sess, model, data, sample_path, 'Epoch {}'.format(epoch + 1))
+            if (epoch + 1) % 5 == 0:
+                sample_path = os.path.join(experiment_path, 'epoch_{0:02d}.png'.format(epoch + 1))
+                sample_and_save(sess, model, data, sample_path, 'Epoch {}'.format(epoch + 1))
 
         # save checkpoint
         logger.info('#' * 20)
@@ -137,6 +141,7 @@ if __name__ == '__main__':
     ######################################################################################
     parser.add_argument('experiment_name', type=str, help='experiment name')
     parser.add_argument('--log_path', type=str, default='./log/',  help='tensorboard log path')
+    parser.add_argument('--use_made', action='store_true', help='Add MADE arch on top of PixelCNN')
     parser.add_argument('--num_epochs', type=int, default=25,  help='num of epochs')
     parser.add_argument('--gpu_inst', type=str, default='', help='choose GPU instance. empty string == run on CPU []')
 
@@ -163,7 +168,7 @@ if __name__ == '__main__':
 
     # run
     data = get_data()
-    model = nets.pixelCNN()
+    model = nets.pixelCNN(config.use_made)
     model.build('model', summarize=True)
     train(data, model, config)
 

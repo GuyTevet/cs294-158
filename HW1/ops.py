@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import MADE
 
 def mask(size, type_A):
     m = np.zeros((size, size), dtype=np.float32)
@@ -42,3 +43,9 @@ def res_block(inp, scope, channels=128):
         res = conv_1x1(res, 'conv1x1_upsample', channels // 2, channels)
 
         return inp + res
+
+def made_with_auxiliary(input, auxilary_input, hidden_dim=32):
+    made_input = MADE.MadeInput('made_input', input, depth=4) # prepare input image + m vector
+    made_hidden = MADE.MadeHiddenWithAuxiliary('made_h1_with_aux', made_input, auxilary_input, hidden_dim) # hidden layer
+    logits = MADE.MadeOutput('made_out', made_input, made_hidden, auxilary_input).units # output layer
+    return logits

@@ -4,8 +4,9 @@ import numpy as np
 
 class pixelCNN(object):
 
-    def __init__(self, batch_size=128, image_size=28, num_channels=3, num_colors=4, net_width = 128):
+    def __init__(self, use_made=False, batch_size=128, image_size=28, num_channels=3, num_colors=4, net_width = 128):
 
+        self.use_made = use_made
         self.batch_size = batch_size
         self.image_size = image_size
         self.num_channels = num_channels
@@ -37,12 +38,22 @@ class pixelCNN(object):
                        in_channels=self.net_width,
                        out_channels=self.net_width)
 
-        net = tf.nn.relu(net)
-        net = ops.conv_1x1(net, 'final_conv1x1_2',
-                       in_channels=self.net_width,
-                       out_channels=self.num_channels * self.num_colors)
+        if self.use_made:
+            net = tf.nn.relu(net)
+            net = ops.conv_1x1(net, 'final_conv1x1_2',
+                           in_channels=self.net_width,
+                           out_channels=self.net_width)
 
-        net = tf.reshape(net, (-1, self.image_size, self.image_size, self.num_channels, self.num_colors))
+            net = ops.made_with_auxiliary(input=self.inputs_batch,
+                                          auxilary_input=net)
+
+        else:
+            net = tf.nn.relu(net)
+            net = ops.conv_1x1(net, 'final_conv1x1_2',
+                           in_channels=self.net_width,
+                           out_channels=self.num_channels * self.num_colors)
+
+            net = tf.reshape(net, (-1, self.image_size, self.image_size, self.num_channels, self.num_colors))
 
         return net
 
@@ -53,7 +64,7 @@ class pixelCNN(object):
         return tf.nn.softmax(logits, axis=4, name='inference')
 
     def add_training_op(self, loss):
-        return tf.train.GradientDescentOptimizer(0.05).minimize(loss)
+        return tf.train.GradientDescentOptimizer(0.001).minimize(loss)
 
     def add_summary_op(self, pred, loss, name):
         """Sets up the summary Op.
