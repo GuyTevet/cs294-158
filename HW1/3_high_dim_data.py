@@ -60,11 +60,9 @@ def sample_and_save(sess, model, data, save_path, label=''):
     plt.savefig(save_path)
 
 def recptive_field_experiment(sess, model, save_path, label=''):
-
-
     grad = model.calc_grad(sess)
     grad = np.mean(grad, axis=3).squeeze() # average colors
-    grad = grad != 0 # make it binary
+    grad = np.abs(grad) > 1e-40 # make it binary
 
     # save
     plt.figure(figsize=(8, 8))
