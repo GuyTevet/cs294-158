@@ -44,9 +44,9 @@ def sample_and_save(sess, model, data, save_path, label=''):
     # sample
     num_images = 16
     logger.info('Sampling {} images from the model'.format(num_images))
-    # samples = model.sample(sess, num_images)
+    samples = model.sample(sess, num_images)
     # samples = np.zeros([num_images, 28, 28, 3])
-    samples = data['test'][:num_images]
+    # samples = data['test'][:num_images]
 
     # save samples
     plt.figure(figsize=(12, 12))
