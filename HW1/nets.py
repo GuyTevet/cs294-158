@@ -64,7 +64,7 @@ class pixelCNN(object):
         return tf.nn.softmax(logits, axis=4, name='inference')
 
     def add_training_op(self, loss):
-        return tf.train.GradientDescentOptimizer(0.001).minimize(loss)
+        return tf.train.AdamOptimizer(learning_rate=0.001).minimize(loss)
 
     def add_summary_op(self, pred, loss, name):
         """Sets up the summary Op.
